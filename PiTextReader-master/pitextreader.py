@@ -1,47 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # 
 # PiTextReader - Raspberry Pi Printed Text-to-Speech Reader
+# Modified to use PaddleOCR instead of Tesseract
 #
-# Allows sight impaired person to have printed text read using
-# OCR and text-to-speech.
-#
-# Normally run by pi crontab at bootup
-# Turn off by commenting out @reboot... using $ crontab -e; sudo reboot
-# Manually run using $ python pitextreader.py
-#
-# This is a simplistic (i.e. not pretty) python program
-# Just runs cmd-line pgms raspistill, tesseract-ocr, flite to do all the work
-#
-# Version 1.0 2018.02.10 - initial release - rgrokett
-# v1.1 - added some text cleanup to improve reading
-# v1.2 - removed tabs
-#
-# http://kd.grokett.com/
-#
-# License: GPLv3, see: www.gnu.org/licenses/gpl-3.0.html
-#
- 
 import RPi.GPIO as GPIO
-import os, sys
+import os
+import sys
 import logging
 import subprocess
 import threading
-import time 
-
+import time
+from paddleocr import PaddleOCR  # PaddleOCR 추가
 
 ##### USER VARIABLES
-DEBUG   = 0 # Debug 0/1 off/on (writes to debug.log)
-SPEED   = 1.0   # Speech speed, 0.5 - 2.0 
-VOLUME  = 90    # Audio volume
+DEBUG = 0  # Debug 0/1 off/on (writes to debug.log)
+SPEED = 1.0  # Speech speed, 0.5 - 2.0
+VOLUME = 90  # Audio volume
 
 # OTHER SETTINGS
-SOUNDS  = "/home/pi/PiTextReader/sounds/" # Directory for sound effect(s)
-CAMERA  = "raspistill -cfx 128:128 --awb auto -rot 180 -t 500 -o /tmp/image.jpg"
+SOUNDS = "/home/pi/PiTextReader/sounds/"  # Directory for sound effect(s)
+CAMERA = "raspistill -cfx 128:128 --awb auto -rot 180 -t 500 -o /tmp/image.jpg"
 
 # GPIO BUTTONS
-BTN1    = 24    # The button!
-LED     = 18    # The button's LED!
+BTN1 = 24  # The button!
+LED = 18  # The button's LED!
 
+# PaddleOCR 객체 생성 (한 번만 초기화)
+ocr = PaddleOCR(use_angle_cls=True, lang='en')  # 'en'을 'korean' 등으로 변경 가능
 
 ### FUNCTIONS
 # Thread controls for background processing
@@ -117,14 +102,12 @@ def playTTS():
     current_tts.communicate()
     return
 
-
 # Stop TTS (with Interrupt)
 def stopTTS():
     global current_tts
     # If button pressed, then stop audio
     if GPIO.input(BTN1) == GPIO.LOW:
         logger.info('stopTTS()') 
-        #current_tts.terminate()
         current_tts.kill()
         time.sleep(0.5)
     return 
@@ -132,7 +115,7 @@ def stopTTS():
 # GRAB IMAGE AND CONVERT
 def getData():
     logger.info('getData()') 
-    led(0) # Turn off Button LED
+    led(0)  # Turn off Button LED
 
     # Take photo
     sound(SOUNDS+"camera-shutter.wav")
@@ -140,12 +123,16 @@ def getData():
     logger.info(cmd) 
     os.system(cmd)
 
-    # OCR to text
+    # OCR to text using PaddleOCR
     speak("now working. please wait.")
-    cmd = "/usr/bin/tesseract /tmp/image.jpg /tmp/text"
-    logger.info(cmd) 
-    os.system(cmd)
+    logger.info("Using PaddleOCR for text extraction.")
+    result = ocr.ocr('/tmp/image.jpg', cls=True)
     
+    # OCR 결과를 텍스트 파일로 저장
+    extracted_text = '\n'.join([line[1][0] for line in result[0]])
+    with open("/tmp/text.txt", "w") as f:
+        f.write(extracted_text)
+
     # Cleanup text
     cleanText()
 
@@ -153,10 +140,7 @@ def getData():
     playTTS()
     return
 
-
-######
-# MAIN
-######
+###### MAIN
 try:
     global rt
     # Setup Logging
@@ -181,8 +165,7 @@ try:
     GPIO.setup(LED, GPIO.OUT) 
     
     # Threaded audio player
-    #rt = RaspberryThread( function = repeatTTS ) # Repeat Speak text
-    rt = RaspberryThread( function = stopTTS ) # Stop Speaking text
+    rt = RaspberryThread(function=stopTTS)  # Stop Speaking text
     
     volume(VOLUME)
     speak("OK, ready")
@@ -193,7 +176,7 @@ try:
             # Btn 1
             getData()
             rt.stop()
-            rt = RaspberryThread( function = stopTTS ) # Stop Speaking text
+            rt = RaspberryThread(function=stopTTS)  # Stop Speaking text
             led(1)
             time.sleep(0.5)  
             speak("OK, ready")
@@ -202,6 +185,5 @@ try:
 except KeyboardInterrupt:
     logger.info("exiting")
 
-GPIO.cleanup() #Reset GPIOs
+GPIO.cleanup()  # Reset GPIOs
 sys.exit(0)
-
