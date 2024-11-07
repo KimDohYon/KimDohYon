@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # 
 # PiTextReader - Raspberry Pi Printed Text-to-Speech Reader
-# Modified to use PaddleOCR instead of Tesseract
+# Modified to use PaddleOCR and Google Translate API for Korean translation
 #
 import RPi.GPIO as GPIO
 import os
@@ -11,6 +11,7 @@ import subprocess
 import threading
 import time
 from paddleocr import PaddleOCR  # PaddleOCR 추가
+from googletrans import Translator  # googletrans 라이브러리 추가
 
 ##### USER VARIABLES
 DEBUG = 0  # Debug 0/1 off/on (writes to debug.log)
@@ -25,8 +26,9 @@ CAMERA = "raspistill -cfx 128:128 --awb auto -rot 180 -t 500 -o /tmp/image.jpg"
 BTN1 = 24  # The button!
 LED = 18  # The button's LED!
 
-# PaddleOCR 객체 생성 (한 번만 초기화)
-ocr = PaddleOCR(use_angle_cls=True, lang='en')  # 'en'을 'korean' 등으로 변경 가능
+# PaddleOCR 및 Translator 초기화
+ocr = PaddleOCR(use_angle_cls=True, lang='en')  # OCR 객체
+translator = Translator()  # 번역 객체
 
 ### FUNCTIONS
 # Thread controls for background processing
@@ -112,7 +114,7 @@ def stopTTS():
         time.sleep(0.5)
     return 
 
-# GRAB IMAGE AND CONVERT
+# GRAB IMAGE, PERFORM OCR, AND TRANSLATE TO KOREAN
 def getData():
     logger.info('getData()') 
     led(0)  # Turn off Button LED
@@ -128,15 +130,20 @@ def getData():
     logger.info("Using PaddleOCR for text extraction.")
     result = ocr.ocr('/tmp/image.jpg', cls=True)
     
-    # OCR 결과를 텍스트 파일로 저장
+    # OCR 결과 텍스트 추출
     extracted_text = '\n'.join([line[1][0] for line in result[0]])
+    logger.info("Extracted Text: " + extracted_text)
+    
+    # 번역 수행
+    logger.info("Translating text to Korean...")
+    translated_text = translator.translate(extracted_text, src='en', dest='ko').text
+    logger.info("Translated Text: " + translated_text)
+
+    # 번역된 텍스트를 /tmp/text.txt에 저장
     with open("/tmp/text.txt", "w") as f:
-        f.write(extracted_text)
+        f.write(translated_text)
 
-    # Cleanup text
-    cleanText()
-
-    # Start reading text
+    # Start reading translated text
     playTTS()
     return
 
@@ -159,7 +166,7 @@ try:
     
     # Setup GPIO buttons
     GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings (False)
+    GPIO.setwarnings(False)
      
     GPIO.setup(BTN1, GPIO.IN, pull_up_down=GPIO.PUD_UP) 
     GPIO.setup(LED, GPIO.OUT) 
@@ -187,3 +194,4 @@ except KeyboardInterrupt:
 
 GPIO.cleanup()  # Reset GPIOs
 sys.exit(0)
+
