@@ -1,4 +1,4 @@
-import tkinter as tk
+ㅍimport tkinter as tk
 import firebase_admin
 from firebase_admin import credentials, messaging
 import os
@@ -33,6 +33,35 @@ translator = Translator()
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
+# 타이머 설정
+timer_running = False
+timer_seconds = 0
+
+def update_timer():
+    global timer_seconds
+    if timer_running:
+        timer_seconds += 1
+        minutes, seconds = divmod(timer_seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        timer_label.config(text=f"{hours:02}:{minutes:02}:{seconds:02}")
+        root.after(1000, update_timer)
+
+def start_timer():
+    global timer_running
+    if not timer_running:
+        timer_running = True
+        update_timer()
+
+def stop_timer():
+    global timer_running
+    timer_running = False
+
+def reset_timer():
+    global timer_running, timer_seconds
+    timer_running = False
+    timer_seconds = 0
+    timer_label.config(text="00:00:00")
+
 # Tkinter 화면 설정
 root = tk.Tk()
 root.title("Translight & Timer Control")
@@ -47,16 +76,14 @@ top_frame.pack(side="top", fill="both", expand=True)
 timer_frame = tk.Frame(top_frame, width=100, bg="lightgrey")
 timer_frame.pack(side="left", fill="y")
 
-def update_timer():
-    current_time = time.strftime("%H:%M:%S")
-    timer_label.config(text=current_time)
-    root.after(1000, update_timer)
-
-start_btn = tk.Button(timer_frame, text="Start Timer", command=lambda: send_timer("start"), height=2, width=12)
+start_btn = tk.Button(timer_frame, text="Start Timer", command=start_timer, height=2, width=12)
 start_btn.pack(pady=20)
 
-stop_btn = tk.Button(timer_frame, text="Stop Timer", command=lambda: send_timer("stop"), height=2, width=12)
+stop_btn = tk.Button(timer_frame, text="Stop Timer", command=stop_timer, height=2, width=12)
 stop_btn.pack(pady=20)
+
+reset_btn = tk.Button(timer_frame, text="Reset Timer", command=reset_timer, height=2, width=12)
+reset_btn.pack(pady=20)
 
 timer_label = tk.Label(timer_frame, text="00:00:00", font=("Arial", 16), bg="lightgrey")
 timer_label.pack(pady=20)
@@ -237,7 +264,6 @@ def main():
     try:
         button_thread = Thread(target=wait_for_button_press, daemon=True)
         button_thread.start()
-        update_timer()  # 타이머 업데이트 시작
         root.mainloop()
     except KeyboardInterrupt:
         print("프로그램 종료.")
