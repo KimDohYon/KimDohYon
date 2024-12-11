@@ -1,4 +1,4 @@
-ㅍimport tkinter as tk
+import tkinter as tk
 import firebase_admin
 from firebase_admin import credentials, messaging
 import os
