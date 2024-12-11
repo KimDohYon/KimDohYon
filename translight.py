@@ -39,11 +39,28 @@ root.title("Translight & Timer Control")
 root.geometry("800x600")
 root.configure(bg="white")
 
-status_label = tk.Label(root, text="버튼을 눌러 작업을 시작하세요.", font=("Arial", 16))
-status_label.pack(pady=10)
+# Main Frame
+top_frame = tk.Frame(root)
+top_frame.pack(side="top", fill="both", expand=True)
+
+# Timer Control Section
+timer_frame = tk.Frame(top_frame, width=100, bg="lightgrey")
+timer_frame.pack(side="left", fill="y")
+
+start_btn = tk.Button(timer_frame, text="Start Timer", command=lambda: send_timer("start"), height=2, width=12)
+start_btn.pack(pady=20)
+
+stop_btn = tk.Button(timer_frame, text="Stop Timer", command=lambda: send_timer("stop"), height=2, width=12)
+stop_btn.pack(pady=20)
 
 # Highlight OCR Section
-text_frame = tk.Frame(root)
+content_frame = tk.Frame(top_frame)
+content_frame.pack(side="right", expand=True, fill="both")
+
+status_label = tk.Label(content_frame, text="버튼을 눌러 작업을 시작하세요.", font=("Arial", 16))
+status_label.pack(pady=10)
+
+text_frame = tk.Frame(content_frame)
 text_frame.pack(expand=True, fill="both", pady=20)
 
 original_text_box = tk.Text(text_frame, width=32, height=16, state="disabled", wrap="word", font=("Arial", 16))
@@ -53,16 +70,6 @@ translated_text_box = tk.Text(text_frame, width=32, height=16, state="disabled",
 translated_text_box.grid(row=0, column=1, padx=10)
 
 trans_history = []
-
-# Timer Control Section
-timer_frame = tk.LabelFrame(root, text="Timer Control", padx=10, pady=10)
-timer_frame.pack(fill="both", expand="yes", padx=10, pady=10)
-
-start_btn = tk.Button(timer_frame, text="Start Timer", command=lambda: send_timer("start"), height=2, width=20)
-start_btn.pack(pady=10)
-
-stop_btn = tk.Button(timer_frame, text="Stop Timer", command=lambda: send_timer("stop"), height=2, width=20)
-stop_btn.pack(pady=10)
 
 # Firebase 메시지 전송 함수
 def send_message(topic, action, additional_data=None):
