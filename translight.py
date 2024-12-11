@@ -81,7 +81,15 @@ def send_message(topic, action, additional_data=None):
     print(f"Successfully sent message: {action} to topic {topic}")
 
 def send_timer(action):
-    send_message("timer", action)
+    try:
+        message = messaging.Message(
+            data={"action": action},
+            topic="timer"
+        )
+        response = messaging.send(message)
+        print(f"Successfully sent Timer Message: {action}")
+    except Exception as e:
+        print(f"Failed to send Timer Message: {e}")
 
 # libcamera-still로 이미지 캡처
 def capture_image(image_path):
@@ -196,37 +204,4 @@ def display_out(original, translated):
         trans_history.pop()
 
     original_text_box.config(state="normal")
-    translated_text_box.config(state="normal")
-    original_text_box.delete("1.0", tk.END)
-    translated_text_box.delete("1.0", tk.END)
-
-    for i, (orig, trans) in enumerate(trans_history):
-        original_text_box.insert(tk.END, f"{i+1}. {orig}\n")
-        translated_text_box.insert(tk.END, f"{i+1}. {trans}\n")
-
-    original_text_box.config(state="disabled")
-    translated_text_box.config(state="disabled")
-    status_label.config(text="버튼을 눌러 작업을 시작하세요.")
-    root.update()
-
-# 디스플레이 종료 함수
-def on_closing():
-    GPIO.cleanup()
-    root.destroy()
-
-# 메인 실행 함수
-def main():
-    root.protocol("WM_DELETE_WINDOW", on_closing)  # 창 닫기 이벤트 처리
-
-    try:
-        button_thread = Thread(target=wait_for_button_press, daemon=True)
-        button_thread.start()
-        root.mainloop()
-    except KeyboardInterrupt:
-        print("프로그램 종료.")
-    finally:
-        GPIO.cleanup()
-        on_closing()
-
-if __name__ == "__main__":
-    main()
+    translated_text_box.config(state="
