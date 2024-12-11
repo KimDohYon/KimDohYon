@@ -148,7 +148,7 @@ def process_highlighted_text(image_path):
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         # HSV 범위 설정 (노란색 확장)
-        lower_yellow = np.array([15, 80, 80])
+        lower_yellow = np.array([20, 100, 150])
         upper_yellow = np.array([35, 255, 255])
 
         # 대비 향상 (CLAHE 사용)
