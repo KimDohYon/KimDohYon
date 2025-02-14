@@ -1,6 +1,6 @@
 from pynq import Overlay
 
-bitfile = "/home/xilinx/finn-accel.bit"
+bitfile = "/home/ubuntu/finn-cybsec-mlp-demo/bitfile/finn-accel.bit"
 overlay = Overlay(bitfile)
 overlay.download()
 
