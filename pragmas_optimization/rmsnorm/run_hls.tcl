@@ -42,10 +42,12 @@ if {[file exists $rpt_file]} {
                 set bram_raw        [lindex $fields_cleaned 10]
                 set dsp_raw         [lindex $fields_cleaned 11]
                 set ff_raw          [lindex $fields_cleaned 12]
+                set lut_raw          [lindex $fields_cleaned 13]
 
                 regexp {(\d+)} $bram_raw -> bram
                 regexp {(\d+)} $dsp_raw  -> dsp
                 regexp {(\d+)} $ff_raw   -> ff
+                regexp {(\d+)} $lut_raw   -> lut
             }
             break
         }
