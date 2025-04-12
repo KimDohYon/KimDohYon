@@ -11,7 +11,7 @@ if [[ ! -f results.csv ]]; then
 fi
 
 DONE=$(($(wc -l < final_results.csv) - 1))
-NUM_EXPERIMENTS=3000
+NUM_EXPERIMENTS=1000
 
 for ((i=DONE+1; i<=NUM_EXPERIMENTS; i++)); do
   PRAGMAS=$(python3 nas_model_dqn.py 2>/dev/null)

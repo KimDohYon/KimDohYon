@@ -30,7 +30,7 @@ if {[file exists $rpt_file]} {
     close $f
 
     foreach line $lines {
-        if {[string match "*|+ rmsnorm*" $line]} {
+        if {[string match "*|+ top_rmsnorm*" $line]} {
             set fields [split $line "|"]
             set fields_cleaned {}
             foreach f $fields {

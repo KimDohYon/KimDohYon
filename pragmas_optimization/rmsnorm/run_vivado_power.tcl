@@ -6,7 +6,7 @@ create_project rmsnorm_power ./vivado_proj -part xck26-sfvc784-2LV-c
 set_property ip_repo_paths "/home/andrew/rmsnorm_NAS/rmsnorm_proj/solution1/impl/ip" [current_project]
 update_ip_catalog
 
-create_ip -name rmsnorm -vendor xilinx.com -library hls -version 1.0 -module_name rmsnorm_inst
+create_ip -name top_rmsnorm -vendor xilinx.com -library hls -version 1.0 -module_name rmsnorm_inst
 set_property generate_synth_checkpoint false [get_files rmsnorm_inst.xci]
 generate_target all [get_ips *]
 
@@ -14,7 +14,7 @@ set_property source_mgmt_mode None [current_project]
 update_compile_order -fileset sources_1
 set_property top rmsnorm [current_fileset]
 
-synth_design -top rmsnorm -part xck26-sfvc784-2LV-c
+synth_design -top top_rmsnorm -part xck26-sfvc784-2LV-c
 opt_design
 place_design
 route_design

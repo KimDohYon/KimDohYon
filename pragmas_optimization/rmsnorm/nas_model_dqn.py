@@ -81,7 +81,8 @@ class DQNAgent:
         self.optimizer = tf.keras.optimizers.Adam(0.001)
         self.memory = deque(maxlen=1000)
         self.gamma, self.epsilon = 0.99, 1.0
-        self.epsilon_min, self.epsilon_decay = 0.05, 0.995
+        self.epsilon_min = 0.05
+        self.epsilon_decay = 0.9477  # 💡 Changed from 0.995 to reach 0.05 in ~64 steps
         self.batch_size = 1
 
         if os.path.exists("dqn_model_weights.weights.h5"):
@@ -96,6 +97,7 @@ class DQNAgent:
                     self.epsilon = data.get("epsilon", 1.0)
                 else:
                     self.memory = data
+
 
     def act(self, state):
         if np.random.rand() <= self.epsilon:
