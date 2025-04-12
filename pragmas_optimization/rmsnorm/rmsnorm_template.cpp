@@ -1,8 +1,9 @@
 #include <cmath>
 #include <cstring>
 
-#define S 768
+static constexpr int dim = 768;
 
+// === 프라그마 실험용 RMSNorm 함수 ===
 template <int S>
 void rmsnorm(float o[S], float x[S], float weight[S])
 {
@@ -24,7 +25,6 @@ void rmsnorm(float o[S], float x[S], float weight[S])
   std::memcpy(x_buff, x, array_size);
   std::memcpy(weight_buff, weight, array_size);
 
-// <<<LOOP_sum_of_squares>>>
 sum_of_squares:
   for (int j = 0; j < S; j++) {
 #pragma HLS PIPELINE
@@ -37,7 +37,6 @@ sum_of_squares:
   ss += 1e-5f;
   ss = 1.0f / sqrtf(ss);
 
-// <<<LOOP_norm_and_scale>>>
 norm_and_scale:
   for (int j = 0; j < S; j++) {
 #pragma HLS PIPELINE
@@ -50,6 +49,7 @@ norm_and_scale:
   std::memcpy(o, out_buff, array_size);
 }
 
+// === HLS 합성을 위한 Top-Level 함수 정의 ===
 extern "C" {
 void top_rmsnorm(float x[dim], float weight[dim], float o[dim]) {
 
