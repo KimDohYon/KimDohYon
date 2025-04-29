@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>RED-S 위험 점수 계산기 (전체 문항)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select { margin-left: 10px; }
+    h2 { color: #2c3e50; }
+    #result { margin-top: 20px; font-size: 1.2em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>RED-S 위험 점수 계산기 (전체 문항)</h2>
+
+  <label>BMI: <input type="number" id="bmi" step="0.1"></label>
+  <label>최저 BMI: <input type="number" id="min_bmi" step="0.1"></label>
+  <label>주당 체중 측정 횟수: <input type="number" id="weigh_freq"></label>
+
+  <label>아침 발기 빈도 (남성만): <input type="number" id="erection_freq"></label>
+
+  <label>초경 시작 나이:
+    <select id="menarche_age">
+      <option value="11">11세 이하</option>
+      <option value="12">12-13세</option>
+      <option value="14">13-14세</option>
+      <option value="15">15세 이상</option>
+      <option value="0">아직 시작 안 함</option>
+    </select>
+  </label>
+
+  <label>생리 주기가 규칙적인가요?
+    <select id="menstrual">
+      <option value="yes">예</option>
+      <option value="no">아니오</option>
+    </select>
+  </label>
+
+  <label>3개월 이상 생리 중단 경험?
+    <select id="amenorrhea">
+      <option value="never">전혀 없음</option>
+      <option value="past">과거에 있었음</option>
+      <option value="now">현재 진행 중</option>
+    </select>
+  </label>
+
+  <label>채식주의자인가요?
+    <select id="vegetarian">
+      <option value="no">아니오</option>
+      <option value="yes">예</option>
+    </select>
+  </label>
+
+  <label>비건인가요?
+    <select id="vegan">
+      <option value="no">아니오</option>
+      <option value="yes">예</option>
+    </select>
+  </label>
+
+  <label>탄수화물을 제한하나요?
+    <select id="carbs_excluded">
+      <option value="no">아니오</option>
+      <option value="yes">예</option>
+    </select>
+  </label>
+
+  <label>흡연 여부:
+    <select id="smoke">
+      <option value="no">아니오</option>
+      <option value="yes">예</option>
+    </select>
+  </label>
+
+  <label>지난 1년간 부상으로 쉰 날 수: <input type="number" id="injury_days"></label>
+  <label>연부조직 부상 횟수: <input type="number" id="soft_tissue_injuries"></label>
+  <label>재발한 연부조직 부상 수: <input type="number" id="recurrent_soft_injuries"></label>
+  <label>재발한 골절 수: <input type="number" id="recurrent_bone_injuries"></label>
+
+  <label>골절 부위 선택 (해당되는 것만 체크):<br>
+    <input type="checkbox" id="fracture_leg"> 다리
+    <input type="checkbox" id="fracture_foot"> 발
+    <input type="checkbox" id="fracture_pelvis"> 골반
+    <input type="checkbox" id="fracture_spine"> 척추
+    <input type="checkbox" id="fracture_arm"> 팔
+  </label>
+
+  <label>피로도 (1~6): <input type="number" id="fatigue" min="1" max="6"></label>
+  <label>수면의 질 (1~6): <input type="number" id="sleep" min="1" max="6"></label>
+  <label>소화 상태 (1~6): <input type="number" id="digestion" min="1" max="6"></label>
+  <label>음식 섭취 조절 (1~6): <input type="number" id="control_eat" min="1" max="6"></label>
+  <label>체중 조절 (1~6): <input type="number" id="control_weight" min="1" max="6"></label>
+
+  <label>섭식장애 진단 여부:
+    <select id="eating_disorder">
+      <option value="no">아니오</option>
+      <option value="yes">예</option>
+    </select>
+  </label>
+
+  <br><button onclick="calculate()">점수 계산하기</button>
+
+  <div id="result"></div>
+
+  <script>
+    function calculate() {
+      let score = 0;
+      const getVal = id => document.getElementById(id).value;
+      const numVal = id => parseFloat(getVal(id)) || 0;
+      const bool = id => document.getElementById(id).checked;
+
+      const bmi = numVal("bmi");
+      score += bmi < 18 ? -2 : bmi < 20 ? -1 : 1;
+
+      const min_bmi = numVal("min_bmi");
+      score += min_bmi < 18 ? -2 : min_bmi < 20 ? -1 : 1;
+
+      if (numVal("weigh_freq") > 6) score -= 1;
+
+      const erection = numVal("erection_freq");
+      if (erection < 2) score -= 2;
+      else if (erection < 4) score -= 1;
+      else score += 1;
+
+      const menarche = getVal("menarche_age");
+      score += menarche == 0 ? -2 : menarche >= 15 ? -1 : 1;
+
+      score += getVal("menstrual") === "yes" ? 1 : -1;
+
+      const amen = getVal("amenorrhea");
+      score += amen === "never" ? 1 : -1;
+
+      score += getVal("vegetarian") === "yes" ? -1 : 1;
+      score += getVal("vegan") === "yes" ? -2 : 1;
+      score += getVal("carbs_excluded") === "yes" ? -1 : 0;
+      score += getVal("smoke") === "yes" ? -1 : 1;
+
+      const injury_days = numVal("injury_days");
+      if (injury_days >= 14) score -= 2;
+      else if (injury_days >= 7) score -= 1;
+
+      const soft_injuries = numVal("soft_tissue_injuries");
+      if (soft_injuries >= 2) score -= 2;
+      else if (soft_injuries === 1) score -= 1;
+
+      if (numVal("recurrent_soft_injuries") > 2) score -= 1;
+      if (numVal("recurrent_bone_injuries") > 2) score -= 1;
+
+      if (bool("fracture_leg")) score -= 1;
+      if (bool("fracture_foot")) score -= 1;
+      if (bool("fracture_pelvis")) score -= 2;
+      if (bool("fracture_spine")) score -= 2;
+      if (bool("fracture_arm")) score -= 1;
+
+      const fatigue = numVal("fatigue");
+      score += fatigue === 1 ? -2 : fatigue === 2 ? -1 : fatigue === 5 ? 1 : fatigue === 6 ? 2 : 0;
+
+      const sleep = numVal("sleep");
+      score += sleep === 1 ? -2 : sleep === 2 ? -1 : sleep === 5 ? 1 : sleep === 6 ? 2 : 0;
+
+      const digestion = numVal("digestion");
+      score += digestion === 1 ? -2 : digestion === 2 ? -1 : digestion === 5 ? 1 : digestion === 6 ? 2 : 0;
+
+      const control_eat = numVal("control_eat");
+      score += control_eat === 1 ? 2 : control_eat === 2 ? 1 : control_eat === 5 ? -1 : control_eat === 6 ? -2 : 0;
+
+      const control_weight = numVal("control_weight");
+      score += control_weight === 1 ? 2 : control_weight === 2 ? 1 : control_weight === 5 ? -1 : control_weight === 6 ? -2 : 0;
+
+      score += getVal("eating_disorder") === "yes" ? -2 : 1;
+
+      let risk = "낮음";
+      if (score < 0) risk = "높음";
+      else if (score <= 7) risk = "주의 필요";
+
+      document.getElementById("result").innerText =
+        `총 RED-S 점수: ${score}점 → 위험 수준: ${risk}`;
+    }
+  </script>
+</body>
+</html>
