@@ -82,7 +82,7 @@ class DQNAgent:
         self.memory = deque(maxlen=1000)
         self.gamma, self.epsilon = 0.99, 1.0
         self.epsilon_min = 0.05
-        self.epsilon_decay = 0.9477  # 💡 Changed from 0.995 to reach 0.05 in ~64 steps
+        self.epsilon_decay = 0.9477  # Changed from 0.995 to reach 0.05 in ~64 steps
         self.batch_size = 1
 
         if os.path.exists("dqn_model_weights.weights.h5"):
