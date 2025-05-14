@@ -3,7 +3,6 @@
 
 static constexpr int dim = 768;
 
-// === 프라그마 실험용 RMSNorm 함수 ===
 template <int S>
 void rmsnorm(float o[S], float x[S], float weight[S])
 {
@@ -49,7 +48,6 @@ norm_and_scale:
   std::memcpy(o, out_buff, array_size);
 }
 
-// === HLS 합성을 위한 Top-Level 함수 정의 ===
 extern "C" {
 void top_rmsnorm(float x[dim], float weight[dim], float o[dim]) {
 

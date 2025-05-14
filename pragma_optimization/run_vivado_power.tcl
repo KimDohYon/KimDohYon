@@ -3,7 +3,7 @@
 # =========================
 create_project rmsnorm_power ./vivado_proj -part xck26-sfvc784-2LV-c
 
-set_property ip_repo_paths "/home/andrew/rmsnorm_NAS/rmsnorm_proj/solution1/impl/ip" [current_project]
+set_property ip_repo_paths "/home/andrew/pragma_optimization/rmsnorm_proj/solution1/impl/ip" [current_project]
 update_ip_catalog
 
 create_ip -name top_rmsnorm -vendor xilinx.com -library hls -version 1.0 -module_name rmsnorm_inst
